@@ -2,6 +2,8 @@
 
 ## 概要
 
++ [Davinci Controller 2022版マニュアル](./documents/Davinci_controller_2022_manual.pdf)
+  + バッテリーは6～15Vとすること。マニュアル、基板シルクは誤り。
 + Leonard 互換のストロベリー・リナックス Davinci 基板を拡張して使用するための基板。
   + マイコン　ATMEGA32U4 
   + アナログ入力12本（A0～A11）が利用可能。
@@ -10,6 +12,7 @@
     + TJ3B互換［SCL,5V,SDA,GND］を2ポート
 + モータードライバ　TB6612FNGを搭載し、モーター2個を制御可能。
   + VM=15V(Max)、1chあたりIout=1.2A(ave)、3.2A(peak)
+  + VMはバッテリー電圧
   + 結線図
     + Davinci：TB6612FNG
     + D15 (23ピン)：AIN1　　A01：MT1 -
@@ -25,6 +28,8 @@
 ## 実装
 
 <img src="./documents/board2022.png">
+
+（バッテリーは6～15Vとすること。上の図は誤り）
 
 ----
 ## パーツ
