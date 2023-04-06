@@ -1,5 +1,5 @@
 // Davinci Controller
-// スイッチ・モーターテスト
+// モーターテスト 第１弾 ON/OFF
 // 2023-04 ohguma
 
 // ストロベリーリナックス
@@ -7,9 +7,8 @@
 // https://strawberry-linux.com/catalog/items?code=25001
 
 // ■ピン設定
-
 // スタートスイッチ
-// D7に直結しているでINPUT_PULLUPで使用する。 
+// D7に直結してあり、INPUT_PULLUPモードで使用する。
 //
 // Davinci
 // ━━━━━━┓
@@ -24,7 +23,7 @@ const int PIN_SW_START = 7;  //D7 (Davinci 30ピン)
 // D17 (22ピン)┠───┨AIN2   A02┠─ MT1 +
 // D5  (12ピン)┠───┨PWMA      ┃
 // D16 (24ピン)┠───┨BIN1   B01┠─ MT2 +
-// D14 (25ピン)┠───┨BIN2   B02┠─ MT2 - 
+// D14 (25ピン)┠───┨BIN2   B02┠─ MT2 -
 // D11 (29ピン)┠───┨PWMB      ┃
 //
 // IN1  IN2  PWM  動作
@@ -45,17 +44,20 @@ const int PIN_TB6612_PWMA = 5;
 
 void setup() {
   Serial.begin(9600);
+  // オンボードLED 出力設定（LED_BUILTINは定義済定数。値は13）
+  pinMode(LED_BUILTIN, OUTPUT);
+  // スタートスイッチ プルアップ入力設定
+  pinMode(PIN_SW_START, INPUT_PULLUP);
   // MOTOR1
   pinMode(PIN_TB6612_AIN1, OUTPUT);
   pinMode(PIN_TB6612_AIN2, OUTPUT);
   pinMode(PIN_TB6612_PWMA, OUTPUT);
-  // オンボードLED 出力設定
-  pinMode(LED_BUILTIN, OUTPUT);
-  // スタートスイッチ プルアップ入力設定
-  pinMode(PIN_SW_START, INPUT_PULLUP);
 
+  // スタートスイッチが押されるまで、オンボードLEDを点滅する。
   unsigned long tm = 0;
-  // タクトスイッチが押されていない時はHIGH（押されるとLOW）
+  // スタートスイッチが押されるとINPUT_PULLUPモードの
+  // digitalRead()はLOWになり、whileを終了する。
+  Serial.println("Wait until the start switch is pressed.");
   while (digitalRead(PIN_SW_START) == HIGH) {
     // tmは500ミリ秒ごとに0,1,2,3,…となる。
     tm = millis() / 500;
@@ -63,42 +65,36 @@ void setup() {
     if (tm % 2 == 1) {
       // tmを2で割った余りが1の時、LED：ON
       digitalWrite(LED_BUILTIN, HIGH);
+      Serial.print("o");
     } else {
       // tmを2で割った余りが0の時、LED：OFF
       digitalWrite(LED_BUILTIN, LOW);
+      Serial.print(".");
     }
-    delay(10);
+    //少し待つ。
+    delay(100);
   }
+  // オンボードLEDが点灯状態のままループしないよう消しておく。
+  digitalWrite(LED_BUILTIN, LOW);
+  Serial.print("Start loop.");
 }
 
 void loop() {
-    int speed = 0;
-
-    // トップスピード設定
-    int max_speed = 128;
-
-    // 前進
-    for (speed = 0; speed < max_speed; speed++) {
-      // MOTOR1
-      digitalWrite(PIN_TB6612_AIN1, HIGH);
-      digitalWrite(PIN_TB6612_AIN2, LOW);
-      analogWrite(PIN_TB6612_PWMA, speed);
-      delay(10);
-    }
-    // トップスピードで前進のまま
-    delay(500);
-    for (speed = max_speed - 1; speed >= 0; speed--) {
-      // MOTOR1
-      digitalWrite(PIN_TB6612_AIN1, HIGH);
-      digitalWrite(PIN_TB6612_AIN2, LOW);
-      analogWrite(PIN_TB6612_PWMA, speed);
-      delay(10);
-    }
-    
-    // 停止
-    digitalWrite(PIN_TB6612_AIN1, LOW);
-    digitalWrite(PIN_TB6612_AIN2, LOW);
-    digitalWrite(PIN_TB6612_PWMA, HIGH);
-    delay(500);
-
-}    
+  // スピード設定（％指定）
+  int speed = 30;
+  // map() で 0～100[%] を 0～255 に変換。
+  // constrain() は speed が0未満の場合は0、100超の場合100、0～100の場合はそのまま
+  int pwm = map(constrain(speed, 0, 100), 0, 100, 0, 255);
+  // MOTOR1 前進
+  digitalWrite(PIN_TB6612_AIN1, HIGH);
+  digitalWrite(PIN_TB6612_AIN2, LOW);
+  analogWrite(PIN_TB6612_PWMA, pwm);
+  Serial.print("O");
+  delay(500);
+  // MOTOR1 停止
+  digitalWrite(PIN_TB6612_AIN1, LOW);
+  digitalWrite(PIN_TB6612_AIN2, LOW);
+  digitalWrite(PIN_TB6612_PWMA, HIGH);
+  Serial.print("-");
+  delay(500);
+}
