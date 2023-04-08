@@ -1,22 +1,20 @@
-// Davinci Controller
+// ダ・ヴィンチ32U 拡張基板
+// https://github.com/ohguma/davinci_board
+//
 // モーターテスト 第３弾 前後進
-// 2023-04 ohguma
-
+// 2023-04-08 ohguma
+//
+// ■マイコン情報
 // ストロベリーリナックス
 // ダ・ヴィンチ32U with Arduino Bootloader
 // https://strawberry-linux.com/catalog/items?code=25001
-
+//
 // ■ピン設定
-// スタートスイッチ
-// D7に直結してあり、INPUT_PULLUPモードで使用する。
+// ・スタートスイッチはD7に接続されONでGNDに繋がる。
+// ・D7はINPUT_PULLUPモードで使用する。
+const int PIN_SW_START = 7;
 //
-// Davinci
-// ━━━━━━┓
-// D7  (30ピン)┠──SW──GND
-const int PIN_SW_START = 7;  //D7 (Davinci 30ピン)
-
-// モータードライバ TOSHIBA TB6612FNG
-//
+// ・モータードライバ TOSHIBA TB6612FNG
 // Davinci             TB6612FNG
 // ━━━━━━┓      ┏━━━━━┓
 // D15 (23ピン)┠───┨AIN1   A01┠─ MT1 -
@@ -36,7 +34,7 @@ const int PIN_SW_START = 7;  //D7 (Davinci 30ピン)
 //
 // TB6612FNG Hookup Guide
 // https://learn.sparkfun.com/tutorials/TB6612fng-hookup-guide/all
-
+//
 // MOTOR1
 const int PIN_TB6612_AIN1 = 15;
 const int PIN_TB6612_AIN2 = 17;
@@ -80,10 +78,11 @@ void setup() {
 }
 
 void loop() {
-  // 最大スピード設定（％指定）
+  // 最大スピード設定の絶対値（％指定）
   int max_speed = 50;
-  // スピード設定
+  // スピード設定（-100％～100％で指定、＋は正転、－は逆転）
   int speed = 0;
+  // PWM値(0～255)
   int pwm = 0;
 
   // MOTOR1 前進 加速
@@ -125,3 +124,18 @@ void loop() {
     delay(10);
   }
 }
+
+
+//  ■課題
+//  (1) シリアルモニタを見ながら、スケッチを実行する。
+//  (2) MOTOR1とMOTOR2を同時に同様に動かす。
+//  (3) ditiralWrite()とanalogWrite()している箇所を関数化する。
+//      関数はupdate_motor
+//      関数の戻り値はなし（関数定義の行頭はvoid）
+//      引数は整数型(int)が2つ。
+//      1番目はモーター番号の指定（1 or 2)
+//      2番目はスピード(％指定 -100～100%）
+//      スピードが100%(or -100%)の際にanalogWriteで255を指定する。
+//      スピードが＋の場合は正転、－の場合は逆転させる。
+//  (4) 加減速しているfor文の行は変更せずに、上記関数で同じ動作をさせる。
+//
